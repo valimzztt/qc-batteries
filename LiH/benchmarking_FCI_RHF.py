@@ -61,7 +61,7 @@ for r in r_values:
         theta, prev_energy = opt.step_and_cost(cost_fn, theta)
     energies_vqe.append(prev_energy)
 
-
+    # Full Configuration Interaction (FCI)
     # Calculate Full CI (Exact, but brute force :( ): Convert H to a matrix and diagonalize it to find the absolute lowest eigenvalue
     H_mat = qml.matrix(H)
     eigenvalues = np.linalg.eigvalsh(H_mat)
@@ -74,7 +74,7 @@ for r in r_values:
 plt.figure(figsize=(10, 6))
 plt.plot(r_values, energies_hf, 'k--', label="Hartree-Fock (Classical)", linewidth=2)
 plt.plot(r_values, energies_fci, 'b-', label="QVE result", linewidth=2, alpha=0.6)
-plt.plot(r_values, energies_fci, 'b-', label="Full CI", linewidth=2, alpha=0.6)
+plt.plot(r_values, energies_fci, 'r-', label="Full CI", linewidth=2, alpha=0.6)
 plt.fill_between(r_values, energies_hf, energies_fci, color='gray', alpha=0.2, label="Correlation Energy")
 plt.xlabel("Bond Length (Bohr)")
 plt.ylabel("Energy (Hartree)")
