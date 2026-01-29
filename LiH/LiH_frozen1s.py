@@ -24,7 +24,7 @@ active_orbitals = 5
 H_frozen, qubits_frozen = qchem.molecular_hamiltonian(
     symbols,
     geometry,
-    active_electrons=active_electrons,
+    # active_electrons=active_electrons,
     active_orbitals=active_orbitals
 )
 
