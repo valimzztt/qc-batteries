@@ -25,7 +25,7 @@ active_electrons = 2
 active_orbitals = 6
 print("Starting the Hamiltonian")
 # 4. Build Hamiltonian
-H_pauli, qubits = qchem.molecular_hamiltonian(
+""" H_pauli, qubits = qchem.molecular_hamiltonian(
     symbols,
     geometry,
     # charge=7, 
@@ -41,10 +41,16 @@ with open("TiO2_Hamiltonian.pkl", "wb") as f:
     pickle.dump(H_pauli, f)
 
 print(f"TiO2 Dimer Qubits: {qubits}")
-# Mapping to Pauli operators for VQE
-print(H_pauli)
+"""
 
-""" We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
+import pickle
+# Load from the file
+with open("CO2_Hamiltonian.pkl", "rb") as f:
+    H_loaded = pickle.load(f)
+qubits = 12
+H_pauli = H_loaded # Already mapped to qubit hamiltonian
+
+# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
 # excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
 # compatible with the Jordan-Wigner mapping. 
 # We need the initial state that has the correct number of electrons. 
@@ -52,9 +58,10 @@ print(H_pauli)
 # For that, we need to specify the number of electrons, the number of orbitals and the desired mapping.
 hf_state = qchem.hf_state(active_electrons, qubits, basis="bravyi_kitaev") 
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number") 
-# Construct the excitation operator mapping manuallz
 
-singles, doubles = qchem.excitations(electrons, qubits)
+# Construct the excitation operator mapping manuallz
+from pennylane.fermi import from_string
+singles, doubles = qchem.excitations(active_electrons, qubits)
 
 singles_fermi = []
 for ex in singles:
@@ -88,6 +95,5 @@ def circuit(params):
     for j, excitation in enumerate(singles_pauli):
         qml.exp((excitation * params[i + j + 1] / 2).operation()), range(qubits)
 
-    return qml.expval(h_pauli)
-
+    return qml.expval(H_pauli)
 print('Energy =', circuit(params)) 

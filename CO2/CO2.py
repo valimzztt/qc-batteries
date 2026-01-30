@@ -48,7 +48,7 @@ with open("CO2_Hamiltonian.pkl", "wb") as f:
 
 print("Hamiltonian saved successfully!")
 
-# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
+# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a set of single and double 
 # excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
 # compatible with the Jordan-Wigner mapping. 
 # We need the initial state that has the correct number of electrons. 
@@ -57,8 +57,8 @@ print("Hamiltonian saved successfully!")
 hf_state = qchem.hf_state(active_electrons, qubits, basis="bravyi_kitaev") 
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number") 
 # Construct the excitation operator mapping manuallz
-
-singles, doubles = qchem.excitations(electrons, qubits)
+from pennylane.fermi import from_string
+singles, doubles = qchem.excitations(active_electrons, qubits)
 
 singles_fermi = []
 for ex in singles:
