@@ -48,7 +48,7 @@ with open("CO2_Hamiltonian.pkl", "wb") as f:
 
 print("Hamiltonian saved successfully!")
 
-""" # We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
+# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
 # excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
 # compatible with the Jordan-Wigner mapping. 
 # We need the initial state that has the correct number of electrons. 
@@ -95,4 +95,3 @@ def circuit(params):
     return qml.expval(h_pauli)
 
 print('Energy =', circuit(params))
- """

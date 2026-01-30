@@ -1,60 +1,71 @@
+
 import pennylane as qml
 from pennylane import qchem
-import os 
-os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=28"
 from jax import numpy as jnp
 import jax
-
-#jax.config.update("jax_enable_x64", True)
+import pickle
+#jax.config.update('jax_num_cpu_devices', 8)
+jax.config.update("jax_enable_x64", True)
 
 # 1. Define TiO2 Dimer Geometry (Ti-O-Ti bridge)
 symbols = ['Ti', 'O', 'Ti']
-# Ti-O distance is typically ~1.9 - 2.0 Angstroms
-geometry = jnp.array([[0.0, 0.0, -2.0],
-                      [0.0, 0.0,  0.0],
-                      [0.0, 0.0,  2.0]])
+""" These are the coordinates from MP:
+(3.2, 3.2, 4.439) 
+(2.3, 2.3, 2.959)
+(3.2, 3.2, 1.480) """
+
+
+# Coordinates taken from MP
+geometry = jnp.array([[3.2, 3.2, 4.439],
+                      [2.3, 2.3, 2.959],
+                      [3.2, 3.2, 1.480]])
 
 # We Build the molecule
 mol = qchem.Molecule(symbols, geometry, mult=1, load_data=True)
 
+with open("TiO2_Hamiltonian_pyscf.pkl", "rb") as f:
+    H_pauli = pickle.load(f)
+    
 # 3. Active Space Selection
 # Titanium (STO-3G) has many orbitals. To keep qubits at ~12:
 # We select 1 active electron (the polaron) and 6 active orbitals 
 # (focused on the Ti 3d and O 2p hybridization path)
 active_electrons = 2
 active_orbitals = 6
-print("Starting the Hamiltonian")
-# 4. Build Hamiltonian
-H_pauli, qubits = qchem.molecular_hamiltonian(
-    symbols,
-    geometry,
-    # charge=7, 
-    mult=1,
-    basis="sto-3g",
-    active_electrons=active_electrons,
-    load_data = True,
-    active_orbitals=active_orbitals
-)
-
-import pickle
-with open("TiO2_Hamiltonian.pkl", "wb") as f:
-    pickle.dump(H_pauli, f)
-
-print(f"TiO2 Dimer Qubits: {qubits}")
-# Mapping to Pauli operators for VQE
-print(H_pauli)
-
-""" We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
+# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
 # excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
 # compatible with the Jordan-Wigner mapping. 
 # We need the initial state that has the correct number of electrons. 
 # We use the Hartree-Fock state which can be obtained in a user-defined basis 
 # For that, we need to specify the number of electrons, the number of orbitals and the desired mapping.
-hf_state = qchem.hf_state(active_electrons, qubits, basis="bravyi_kitaev") 
-hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number") 
-# Construct the excitation operator mapping manuallz
+# Expected: 10 qubits (5 orbitals * 2 spin states)
+# Define active space
+electrons = 52 # Total electrons in TiO2 molecule
+orbitals = 35
+core_indices, active_indices= qchem.active_space(electrons, orbitals, active_electrons=2, active_orbitals=6)
+print("Core orbitals:", core_indices)
+print("Active orbitals:", active_indices)
 
-singles, doubles = qchem.excitations(electrons, qubits)
+
+# h_fermi =  qchem.fermionic_hamiltonian(mol, core=core_indices, active=active_indices)()
+qubits = len(H_pauli.wires)
+# h_pauli = qml.bravyi_kitaev(H_pauli, qubits, tol=1e-16)
+# h_pauli = qml.jordan_wigner(h_fermi )
+h_pauli = H_pauli
+
+# We need the initial state that has the correct number of electrons. 
+# We use the Hartree-Fock state which can be obtained in a user-defined basis 
+# For that, we need to specify the number of electrons, the number of orbitals and the desired mapping.
+#hf_state = qchem.hf_state(active_electrons, qubits, basis="bravyi_kitaev") 
+hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number") 
+# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
+# excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
+# compatible with the Jordan-Wigner mapping. 
+
+# Construct the excitation operator mapping manuallz
+from pennylane.fermi import from_string
+
+singles, doubles = qchem.excitations(active_electrons, qubits)
 
 singles_fermi = []
 for ex in singles:
@@ -90,4 +101,5 @@ def circuit(params):
 
     return qml.expval(h_pauli)
 
-print('Energy =', circuit(params)) 
+print('Energy =', circuit(params))
+
