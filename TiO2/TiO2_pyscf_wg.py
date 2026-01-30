@@ -7,8 +7,6 @@ import optax
 import numpy as np
 
 jax.config.update('jax_enable_x64', True)
-
-# --- 1. System Setup ---
 symbols = ['Ti', 'O', 'Ti']
 geometry = jnp.array([[3.2, 3.2, 4.439],
                       [2.3, 2.3, 2.959],
@@ -17,18 +15,20 @@ geometry = jnp.array([[3.2, 3.2, 4.439],
 active_electrons = 2
 active_orbitals = 6
 
-# --- 2. Hamiltonian (Bravyi-Kitaev) ---
+# Jordan Wigner
 h_pauli, qubits = qchem.molecular_hamiltonian(
     symbols, geometry, mult=1, basis="sto-3g",
+    mapping = "jordan_wigner",
     method = "pyscf",
     active_electrons=active_electrons, active_orbitals=active_orbitals, load_data=True
 )
 
-# --- 3. Initial State (Hartree-Fock in BK basis) ---
+import pickle
+with open("TiO2_Hamiltonian_pyscf_jw.pkl", "wb") as f:
+    pickle.dump(h_pauli, f)
+
+# Initial state (HF) in the Jordan Wigner basis
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number") 
-
-
-# --- 5. Circuit ---
 dev = qml.device("default.qubit", wires=qubits)
 @qml.qnode(dev, interface="jax")
 def circuit(param, wires):

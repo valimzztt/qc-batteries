@@ -26,16 +26,13 @@ h_pauli, qubits = qchem.molecular_hamiltonian(
 )
 
 import pickle
-with open("TiO2_Hamiltonian_pyscf_wg.pkl", "wb") as f:
+with open("TiO2_Hamiltonian_pyscf_kb.pkl", "wb") as f:
     pickle.dump(h_pauli, f)
-
-# --- 3. Initial State (Hartree-Fock in BK basis) ---
 hf_state = qchem.hf_state(active_electrons, qubits, basis="bravyi_kitaev")
 
-# --- 4. Operator Construction (Manual BK) ---
 singles, doubles = qchem.excitations(active_electrons, qubits)
 
-# Convert Fermi excitations to Pauli (BK)
+
 excitation_ops = []
 
 # Doubles
