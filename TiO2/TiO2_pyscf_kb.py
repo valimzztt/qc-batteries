@@ -8,7 +8,6 @@ import numpy as np
 
 jax.config.update('jax_enable_x64', True)
 
-# --- 1. System Setup ---
 symbols = ['Ti', 'O', 'Ti']
 geometry = jnp.array([[3.2, 3.2, 4.439],
                       [2.3, 2.3, 2.959],
@@ -16,8 +15,6 @@ geometry = jnp.array([[3.2, 3.2, 4.439],
 
 active_electrons = 2
 active_orbitals = 6
-
-# --- 2. Hamiltonian (Bravyi-Kitaev) ---
 h_pauli, qubits = qchem.molecular_hamiltonian(
     symbols, geometry, mult=1, basis="sto-3g",
     method = "pyscf",
@@ -37,7 +34,6 @@ excitation_ops = []
 
 # Doubles
 for ex in doubles:
-    # T2 = a^dag_p a^dag_q a_r a_s - h.c.
     term = from_string(f"{ex[3]}+ {ex[2]}+ {ex[1]}- {ex[0]}-") \
          - from_string(f"{ex[0]}+ {ex[1]}+ {ex[2]}- {ex[3]}-")
     # Convert to BK PauliSentence
@@ -72,8 +68,6 @@ def circuit(params):
     # Apply excitations
     # We multiply by 1j to convert the anti-hermitian cluster operator to a Hermitian generator
     for i, op in enumerate(excitation_ops):
-        # We use CommutingEvolution for complex Pauli sums
-        # H_gen = 1j * op
         qml.CommutingEvolution(1j * op, params[i])
         
     return qml.expval(h_pauli)
