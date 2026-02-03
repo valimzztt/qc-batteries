@@ -1,37 +1,35 @@
 import pennylane as qml
 from pennylane import qchem
-from jax import numpy as jnp
+from pennylane.fermi import from_string
 import jax
+from jax import numpy as jnp
 import optax
+import numpy as np
 
-jax.config.update("jax_enable_x64", True)
+jax.config.update('jax_enable_x64', True)
+symbols = ['Ti', 'O', 'Ti']
+geometry = jnp.array([[3.2, 3.2, 4.439],
+                      [2.3, 2.3, 2.959],
+                      [3.2, 3.2, 1.480]])
 
-# define molecule
-symbols = ['Li', 'H']
-geometry = jnp.array([[0.0, 0.0, 0.0],
-                      [0.0, 0.0, 3.0]])
+active_electrons = 2
+active_orbitals = 6
 
-mol = qchem.Molecule(symbols, geometry)
+# Jordan Wigner
+h_pauli, qubits = qchem.molecular_hamiltonian(
+    symbols, geometry, mult=1, basis="sto-3g",
+    mapping = "jordan_wigner",
+    method = "pyscf",
+    active_electrons=active_electrons, active_orbitals=active_orbitals, load_data=True
+)
 
-# Core Electrons (Li 1s) = 2 (Frozen)
-# Active Electrons = 2
-# Total Orbitals in STO-3G = 6 (Indices 0 to 5)
-# Core Orbital = Index 0
-# Active Orbitals = Indices 1, 2, 3, 4, 5 (The remaining 5)
-core_indices = [0]
-active_indices = [1, 2, 3, 4, 5] 
+import pickle
+with open("TiO2_Hamiltonian_pyscf_jw.pkl", "wb") as f:
+    pickle.dump(h_pauli, f)
+with open("TiO2_Hamiltonian_pyscf_jw.pkl", "rb") as f:
+    h_pauli = pickle.load(f) # in the JW basis 
 
-# build the hamiltonian
-h_fermi = qchem.fermionic_hamiltonian(mol, core=core_indices, active=active_indices)()
-
-# number of qubits is 2*active_orbitals
-qubits = len(h_fermi.wires)
-print(f"Simulation Qubits: {qubits}")
-
-# Map to Qubits using Jordan-Wigner (Required for UCCSD)
-h_pauli = qml.jordan_wigner(h_fermi)
-
-# the two active electrons are the one for 2s(Li) and the one for 1
+# How many active electrons
 active_electrons = 2
 
 # Hartree-Fock State (Must be 'occupation_number' for Jordan-Wigner)
@@ -91,4 +89,5 @@ for n in range(max_iterations):
 
 print("\n" f"Final value of the ground-state energy = {energy[-1]:.8f} Ha")
 print("\n" f"Optimal value of the circuit parameter = {angle[-1]:.4f}")
+
 

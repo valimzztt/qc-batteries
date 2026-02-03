@@ -3,6 +3,8 @@ from jax import numpy as jnp
 import jax
 import pennylane as qml
 from pennylane.fermi import from_string
+import optax
+
 
 jax.config.update("jax_enable_x64", True)
 # We start by defining the geometry of the LiH molecule
@@ -17,6 +19,7 @@ mol = qchem.Molecule(symbols, geometry)
 # 1. Get Fermionic Hamiltonian (e.g. from integrals)
 h_fermi = qchem.fermionic_hamiltonian(mol)()
 electrons = 3
+active_electrons = electrons
 qubits = len(h_fermi.wires)
 # Transform the fermionic Hamiltonian to its qubit representation via Bravji-Kitaev transformation
 h_pauli = qml.bravyi_kitaev(h_fermi, qubits, tol=1e-16)
@@ -27,46 +30,62 @@ h_pauli = qml.jordan_wigner(h_fermi )
 hf_state = qchem.hf_state(electrons, qubits, basis="bravyi_kitaev") 
 hf_state = qchem.hf_state(electrons, qubits, basis="occupation_number") 
 
-# We now build the quantum circuit with  the UCCSD ansatz: which is constructed with a se of single and double 
-# excitation operators. In Pennylane, SingleExcitation and DoubleExcitation operators are efficient but only
-# compatible with the Jordan-Wigner mapping. 
+# Hartree-Fock State (Must be 'occupation_number' for Jordan-Wigner)
+hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number")
 
-# Construct the excitation operator mapping manuallz
+# Generate Excitations for UCCSD
+singles, doubles = qchem.excitations(active_electrons, qubits)
+# Map excitations to the wires the UCCSD circuit will act on
+s_wires, d_wires = qml.qchem.excitations_to_wires(singles, doubles)
 
-singles, doubles = qchem.excitations(electrons, qubits)
-
-singles_fermi = []
-for ex in singles:
-    singles_fermi.append(from_string(f"{ex[1]}+ {ex[0]}-")
-                       - from_string(f"{ex[0]}+ {ex[1]}-"))
-
-doubles_fermi = []
-for ex in doubles:
-    doubles_fermi.append(from_string(f"{ex[3]}+ {ex[2]}+ {ex[1]}- {ex[0]}-")
-                       - from_string(f"{ex[0]}+ {ex[1]}+ {ex[2]}- {ex[3]}-"))
-    
-singles_pauli = []
-for op in singles_fermi:
-    singles_pauli.append(qml.bravyi_kitaev(op, qubits, ps=True))
-
-doubles_pauli = []
-for op in doubles_fermi:
-    doubles_pauli.append(qml.bravyi_kitaev(op, qubits, ps=True))
-
-    params = jnp.array([0.22347661, 0.0, 0.0])
-
+# Define the Device
 dev = qml.device("default.qubit", wires=qubits)
 
-@qml.qnode(dev)
-def circuit(params):
-    qml.BasisState(hf_state, wires=range(qubits))
-
-    for i, excitation in enumerate(doubles_pauli):
-        qml.exp((excitation * params[i] / 2).operation()), range(qubits)
-
-    for j, excitation in enumerate(singles_pauli):
-        qml.exp((excitation * params[i + j + 1] / 2).operation()), range(qubits)
-
+# we define the node (what is the meaning of this?)
+@qml.qnode(dev, interface="jax")
+def circuit(params, wires, s_wires, d_wires, hf_state):
+    print("We are using the following HF state", hf_state)
+    qml.UCCSD(params, wires, s_wires, d_wires, hf_state)
     return qml.expval(h_pauli)
 
-print('Energy =', circuit(params))
+# Define the initial values of the circuit parameters
+params = jnp.zeros(len(singles) + len(doubles))
+
+
+def cost_fn(param):
+    result =  circuit(param, wires=range(qubits), s_wires=s_wires, d_wires=d_wires, hf_state=hf_state)
+    print(result)
+    return jnp.real(result)
+
+max_iterations = 100
+conv_tol = 1e-06
+
+opt = optax.sgd(learning_rate=0.4)
+theta = params # the parameters to optimize are the excitations 
+# store the values of the cost function
+energy = [cost_fn(theta)]
+
+# store the values of the circuit parameter
+angle = [theta]
+opt_state = opt.init(theta)
+for n in range(max_iterations):
+
+    gradient = jax.grad(cost_fn)(theta)
+    updates, opt_state = opt.update(gradient, opt_state)
+    theta = optax.apply_updates(theta, updates)
+
+    angle.append(theta)
+    energy.append(cost_fn(theta))
+
+    conv = jnp.abs(energy[-1] - energy[-2])
+
+    if n % 2 == 0:
+        print(f"Step = {n},  Energy = {energy[-1]:.8f} Ha")
+
+    if conv <= conv_tol:
+        break
+
+print("\n" f"Final value of the ground-state energy = {energy[-1]:.8f} Ha")
+print("\n" f"Optimal value of the circuit parameter = {angle[-1]:.4f}")
+
+

@@ -1,0 +1,56 @@
+/home/valmzztt/micromamba/envs/mypenny/lib/python3.12/site-packages/pennylane/__init__.py:212: PennyLaneDeprecationWarning: PennyLane v0.44 has dropped maintainence support for NumPy < 2.0.0. You have version 1.26.4 installed. Future versions of PennyLane will not work with NumPy<2.0. Please consider upgrading NumPy using `python -m pip install numpy --upgrade`. 
+  warnings.warn(
+Step = 0,  Energy = -1749.36456010 Ha
+Step = 2,  Energy = -1749.36748955 Ha
+Step = 4,  Energy = -1749.37015952 Ha
+Step = 6,  Energy = -1749.37258224 Ha
+Step = 8,  Energy = -1749.37477176 Ha
+Step = 10,  Energy = -1749.37674334 Ha
+Step = 12,  Energy = -1749.37851283 Ha
+Step = 14,  Energy = -1749.38009627 Ha
+Step = 16,  Energy = -1749.38150948 Ha
+Step = 18,  Energy = -1749.38276777 Ha
+Step = 20,  Energy = -1749.38388577 Ha
+Step = 22,  Energy = -1749.38487726 Ha
+Step = 24,  Energy = -1749.38575510 Ha
+Step = 26,  Energy = -1749.38653116 Ha
+Step = 28,  Energy = -1749.38721635 Ha
+Step = 30,  Energy = -1749.38782062 Ha
+Step = 32,  Energy = -1749.38835299 Ha
+Step = 34,  Energy = -1749.38882158 Ha
+Step = 36,  Energy = -1749.38923371 Ha
+Step = 38,  Energy = -1749.38959594 Ha
+Step = 40,  Energy = -1749.38991411 Ha
+Step = 42,  Energy = -1749.39019343 Ha
+Step = 44,  Energy = -1749.39043853 Ha
+Step = 46,  Energy = -1749.39065352 Ha
+Step = 48,  Energy = -1749.39084202 Ha
+Step = 50,  Energy = -1749.39100724 Ha
+Step = 52,  Energy = -1749.39115203 Ha
+Step = 54,  Energy = -1749.39127887 Ha
+Step = 56,  Energy = -1749.39138997 Ha
+Step = 58,  Energy = -1749.39148726 Ha
+Step = 60,  Energy = -1749.39157245 Ha
+Step = 62,  Energy = -1749.39164702 Ha
+Step = 64,  Energy = -1749.39171230 Ha
+Step = 66,  Energy = -1749.39176944 Ha
+Step = 68,  Energy = -1749.39181944 Ha
+Step = 70,  Energy = -1749.39186319 Ha
+Step = 72,  Energy = -1749.39190148 Ha
+Step = 74,  Energy = -1749.39193498 Ha
+Step = 76,  Energy = -1749.39196429 Ha
+Step = 78,  Energy = -1749.39198993 Ha
+Step = 80,  Energy = -1749.39201237 Ha
+Step = 82,  Energy = -1749.39203199 Ha
+Step = 84,  Energy = -1749.39204916 Ha
+Step = 86,  Energy = -1749.39206417 Ha
+Step = 88,  Energy = -1749.39207731 Ha
+Step = 90,  Energy = -1749.39208880 Ha
+Step = 92,  Energy = -1749.39209885 Ha
+Step = 94,  Energy = -1749.39210764 Ha
+Step = 96,  Energy = -1749.39211533 Ha
+Step = 98,  Energy = -1749.39212205 Ha
+
+Final value of the ground-state energy = -1749.39212509 Ha
+
+Optimal value of the circuit parameter = 0.8360
