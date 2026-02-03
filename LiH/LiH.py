@@ -5,8 +5,6 @@ import pennylane as qml
 from pennylane.fermi import from_string
 import optax
 
-import optax
-
 
 jax.config.update("jax_enable_x64", True)
 # We start by defining the geometry of the LiH molecule

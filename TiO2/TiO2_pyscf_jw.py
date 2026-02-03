@@ -4,7 +4,6 @@ from pennylane.fermi import from_string
 import jax
 from jax import numpy as jnp
 import optax
-import numpy as np
 
 jax.config.update('jax_enable_x64', True)
 symbols = ['Ti', 'O', 'Ti']
