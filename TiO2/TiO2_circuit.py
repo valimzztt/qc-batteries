@@ -14,7 +14,6 @@ symbols = ['Ti', 'O', 'Ti']
 (2.3, 2.3, 2.959)
 (3.2, 3.2, 1.480) """
 
-
 # Coordinates taken from MP
 geometry = jnp.array([[3.2, 3.2, 4.439],
                       [2.3, 2.3, 2.959],
