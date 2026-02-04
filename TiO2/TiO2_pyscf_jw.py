@@ -18,8 +18,7 @@ active_orbitals = 6
 h_pauli, qubits = qchem.molecular_hamiltonian(
     symbols, geometry, mult=1, basis="sto-3g",
     mapping = "jordan_wigner",
-    method = "pyscf",
-    active_electrons=active_electrons, active_orbitals=active_orbitals, load_data=True
+    method = "pyscf", active_orbitals=active_orbitals, load_data=True
 )
 
 import pickle
