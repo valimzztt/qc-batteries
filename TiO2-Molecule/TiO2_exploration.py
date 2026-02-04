@@ -29,16 +29,16 @@ electrons = 38 # Total electrons in TiO2 molecule
 # The number of orbitals depend on how many molecular orbitals come out from the Hartree fock
 active_electrons = 4
 active_orbitals = 6
-core_indices, active_indices= qchem.active_space(electrons, orbitals=orbitals, active_electrons=active_electrons, active_orbitals=active_orbitals)
-print("Core indices", core_indices)
-print("Active indices", active_indices)
 
 h_pauli, qubits = qchem.molecular_hamiltonian(
     symbols, geometry, mult=1, basis="sto-3g",
     mapping = "jordan_wigner",
-    method = "pyscf", active_orbitals=active_orbitals, load_data=True
+    method = "pyscf", load_data=True
 )
 
+core_indices, active_indices= qchem.active_space(electrons, orbitals=orbitals, active_electrons=active_electrons, active_orbitals=active_orbitals)
+print("Core indices", core_indices)
+print("Active indices", active_indices)
 
 h_fermi =  qchem.fermionic_hamiltonian(molecule, core=core_indices, active= active_indices)()
 print("The fermionic hamiltonian is:", h_fermi)
