@@ -1,34 +1,36 @@
+
 import pennylane as qml
 from pennylane import qchem
-from pennylane.fermi import from_string
-import jax
 from jax import numpy as jnp
-import optax
-
-jax.config.update('jax_enable_x64', True)
-symbols = ['Ti', 'O', 'Ti']
-geometry = jnp.array([[3.2, 3.2, 4.439],
-                      [2.3, 2.3, 2.959],
-                      [3.2, 3.2, 1.480]])
-
-active_electrons = 2
-active_orbitals = 6
-
-# Jordan Wigner
-h_pauli, qubits = qchem.molecular_hamiltonian(
-    symbols, geometry, mult=1, basis="sto-3g",
-    mapping = "jordan_wigner",
-    method = "pyscf", active_orbitals=active_orbitals, load_data=True
-)
-
+import jax
 import pickle
-with open("TiO2_Hamiltonian_pyscf_jw.pkl", "wb") as f:
-    pickle.dump(h_pauli, f)
-with open("TiO2_Hamiltonian_pyscf_jw.pkl", "rb") as f:
-    h_pauli = pickle.load(f) # in the JW basis 
+#jax.config.update('jax_num_cpu_devices', 8)
+jax.config.update("jax_enable_x64", True)
 
-# How many active electrons
-active_electrons = 2
+symbols = ['Ti', 'O', 'O']
+
+geometry = jnp.array([
+    [0.000, 0.000, 0.000],   # Ti
+    [1.620, 0.000, 0.000],   # O
+    [-0.810, 0.000, 1.403],  # O (≈112° angle)
+])
+
+# Assume that your Ti-O-Ti molecule is on the 
+# Charge=0, Multiplicity=1 (Singlet) are defaults
+molecule = qml.qchem.Molecule(symbols, geometry, load_data=True) # creates 12 spin-orbitals, 43 basis functions
+print("The number of atomic basis functions per atom: ", molecule.n_basis) 
+orbitals = sum(molecule.n_basis) # Only valid fpr the simplest basis: total number of orbitals for the
+print("The number of atomic basis functions: ", orbitals) 
+# molecule = qml.qchem.Molecule(symbols, geometry, basis_name="6-31G", load_data=True) # creates 22 spin-orbitals. 67 basis functions
+electrons = 38 # Total electrons in TiO2 molecule
+# The number of orbitals depend on how many molecular orbitals come out from the Hartree fock
+active_electrons = 4
+active_orbitals = 6
+qubits = 2*active_orbitals
+with open("Pauli_MoleculeTiO2_JW.pkl", "rb") as f:
+    H_pauli = pickle.load(f)
+    
+    
 
 # Hartree-Fock State (Must be 'occupation_number' for Jordan-Wigner)
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number")

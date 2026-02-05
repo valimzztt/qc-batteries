@@ -7,7 +7,6 @@ from pennylane import qchem
 
 
 symbols = ["H", "H"]
-
 coordinates = np.array([[-0.70108983, 0.0, 0.0], [0.70108983, 0.0, 0.0]])
 molecule = qml.qchem.Molecule(symbols, coordinates)
 molecule = qml.qchem.Molecule(symbols, coordinates, basis_name="6-31G")
