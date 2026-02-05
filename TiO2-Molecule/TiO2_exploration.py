@@ -38,6 +38,9 @@ h_pauli, qubits = qchem.molecular_hamiltonian(
     method = "pyscf", load_data=True
 )
 
+core_indices, active_indices= qchem.active_space(electrons, orbitals=orbitals, active_electrons=active_electrons, active_orbitals=active_orbitals)
+print("Core indices", core_indices)
+print("Active indices", active_indices)
 
 h_fermi =  qchem.fermionic_hamiltonian(molecule, core=core_indices, active= active_indices)()
 print("The fermionic hamiltonian is:", h_fermi)
