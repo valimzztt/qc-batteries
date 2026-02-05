@@ -1,6 +1,5 @@
 import pennylane as qml
 from pennylane import qchem
-from pennylane.fermi import from_string
 import jax
 from jax import numpy as jnp
 import numpy as np
