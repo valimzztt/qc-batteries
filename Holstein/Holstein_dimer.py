@@ -52,7 +52,7 @@ def holstein_dimer_matrix(t, Delta, omega, g, Nph):
 
     return (H_hop + H_asym + H_ph + H_coup).tocsr()
 
-# We encode the number of phonons into qubits
+# We encode the number of phonons into qubits, using a binary basis
 def n_qubits_for_phonon(Nph: int) -> int:
     return int(np.ceil(np.log2(Nph)))
 

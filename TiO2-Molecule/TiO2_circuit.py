@@ -1,10 +1,13 @@
 
 import pennylane as qml
 from pennylane import qchem
+import pickle
+import optax
+import os 
+os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
 from jax import numpy as jnp
 import jax
-import pickle
-#jax.config.update('jax_num_cpu_devices', 8)
+
 jax.config.update("jax_enable_x64", True)
 
 symbols = ['Ti', 'O', 'O']
@@ -12,7 +15,7 @@ symbols = ['Ti', 'O', 'O']
 geometry = jnp.array([
     [0.000, 0.000, 0.000],   # Ti
     [1.620, 0.000, 0.000],   # O
-    [-0.810, 0.000, 1.403],  # O (≈112° angle)
+    [-0.810, 0.000, 1.403],  # O (this is roughly 112 degrees)
 ])
 
 # Assume that your Ti-O-Ti molecule is on the 
@@ -20,20 +23,23 @@ geometry = jnp.array([
 molecule = qml.qchem.Molecule(symbols, geometry, load_data=True) # creates 12 spin-orbitals, 43 basis functions
 print("The number of atomic basis functions per atom: ", molecule.n_basis) 
 orbitals = sum(molecule.n_basis) # Only valid fpr the simplest basis: total number of orbitals for the
-print("The number of atomic basis functions: ", orbitals) 
+print("The number of atomic basis functions: ", orbitals) # relevant for HF
 # molecule = qml.qchem.Molecule(symbols, geometry, basis_name="6-31G", load_data=True) # creates 22 spin-orbitals. 67 basis functions
 electrons = 38 # Total electrons in TiO2 molecule
 # The number of orbitals depend on how many molecular orbitals come out from the Hartree fock
-active_electrons = 4
+active_electrons = 4  # 
 active_orbitals = 6
 qubits = 2*active_orbitals
-with open("Pauli_MoleculeTiO2_JW.pkl", "rb") as f:
-    H_pauli = pickle.load(f)
-    
-    
 
+folder = "TiO2-Molecule"
+filepath = os.path.join(folder,"Pauli_MoleculeTiO2_JW.pkl" )
+with open(filepath,"rb") as f:
+    h_pauli = pickle.load(f)
+    
 # Hartree-Fock State (Must be 'occupation_number' for Jordan-Wigner)
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number")
+energy = qchem.hf_energy(molecule)(geometry)
+print(f"Hartree-Fock energy: {energy:.6f} Ha")
 
 # Generate Excitations for UCCSD
 singles, doubles = qchem.excitations(active_electrons, qubits)
