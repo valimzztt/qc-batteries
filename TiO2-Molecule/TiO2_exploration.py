@@ -20,7 +20,7 @@ geometry = jnp.array([
 
 # Assume that your Ti-O-Ti molecule is on the 
 # Charge=0, Multiplicity=1 (Singlet) are defaults
-molecule = qml.qchem.Molecule(symbols, geometry, load_data=True) # creates 12 spin-orbitals, 43 basis functions
+molecule = qml.qchem.Molecule(symbols, geometry, basis_name ="def2-svp",load_data=True) # creates 12 spin-orbitals, 43 basis functions
 print("The number of atomic basis functions per atom: ", molecule.n_basis) 
 orbitals = sum(molecule.n_basis) # Only valid fpr the simplest basis: total number of orbitals for the
 print("The number of atomic basis functions: ", orbitals) 
@@ -45,12 +45,12 @@ print("Active indices", active_indices)
 h_fermi =  qchem.fermionic_hamiltonian(molecule, core=core_indices, active= active_indices)()
 print("The fermionic hamiltonian is:", h_fermi)
 
-with open("Fermionic_MoleculeTiO2.pkl", "wb") as f:
+with open("Fermionic_MoleculeTiO2_def2-svp.pkl", "wb") as f:
     pickle.dump(h_fermi, f)
     
 h_pauli = qml.jordan_wigner(h_fermi)
 print(h_pauli)
 
 
-with open("Pauli_MoleculeTiO2_JW.pkl", "wb") as f:
+with open("Pauli_MoleculeTiO2_JW_def2-svp.pkl", "wb") as f:
     pickle.dump(h_pauli, f)

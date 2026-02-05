@@ -2,9 +2,7 @@ import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
 
-# -----------------------------
-# Model builder (your 3-site + 3 two-level phonons)
-# -----------------------------
+# Three site model with 
 def build_H_total(t, omega, g):
     # Fermionic hopping on sites 0,1,2 (spinless)
     hopping_ops = [
@@ -52,10 +50,6 @@ def build_H_total(t, omega, g):
 
     return H_el_qubit + H_ph + H_int
 
-
-# -----------------------------
-# Diagonalization utility
-# -----------------------------
 def lowest_eigs_vs_g(t, omega, g_values, k=8):
     """
     Returns an array E[g_index, eig_index] of the lowest k eigenvalues.
@@ -79,14 +73,9 @@ def lowest_eigs_vs_g(t, omega, g_values, k=8):
     return np.array(E)
 
 
-# -----------------------------
-# Run + plot
-# -----------------------------
 t = 1.0
 omega = 0.5
-
-g_values = np.linspace(0.0, 3.5, 15)   # adjust range/density as you like
-k_show = 6                              # number of eigenvalues to plot
-
+g_values = np.linspace(0.0, 3.5, 15)  
+k_show = 6                   
 E = lowest_eigs_vs_g(t, omega, g_values, k=k_show)
 print("Lowest eigenstate", E)

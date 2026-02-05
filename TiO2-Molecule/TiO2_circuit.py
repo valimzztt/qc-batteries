@@ -27,9 +27,9 @@ print("The number of atomic basis functions: ", orbitals) # relevant for HF
 # molecule = qml.qchem.Molecule(symbols, geometry, basis_name="6-31G", load_data=True) # creates 22 spin-orbitals. 67 basis functions
 electrons = 38 # Total electrons in TiO2 molecule
 # The number of orbitals depend on how many molecular orbitals come out from the Hartree fock
-active_electrons = 4  # 
+active_electrons = 6  # 
 active_orbitals = 6
-qubits = 2*active_orbitals
+qubits = 2*active_orbitals # equivalent to spin orbitals
 
 folder = "TiO2-Molecule"
 filepath = os.path.join(folder,"Pauli_MoleculeTiO2_JW.pkl" )
@@ -38,15 +38,14 @@ with open(filepath,"rb") as f:
     
 # Hartree-Fock State (Must be 'occupation_number' for Jordan-Wigner)
 hf_state = qchem.hf_state(active_electrons, qubits, basis="occupation_number")
-energy = qchem.hf_energy(molecule)(geometry)
-print(f"Hartree-Fock energy: {energy:.6f} Ha")
+""" energy = qchem.hf_energy(molecule)(geometry)
+print(f"Hartree-Fock energy: {energy:.6f} Ha") """
 
 # Generate Excitations for UCCSD
 singles, doubles = qchem.excitations(active_electrons, qubits)
 # Map excitations to the wires the UCCSD circuit will act on
 s_wires, d_wires = qml.qchem.excitations_to_wires(singles, doubles)
 
-# Define the Device
 dev = qml.device("default.qubit", wires=qubits)
 
 # we define the node (what is the meaning of this?)
@@ -76,8 +75,7 @@ energy = [cost_fn(theta)]
 # store the values of the circuit parameter
 angle = [theta]
 opt_state = opt.init(theta)
-for n in range(max_iterations):
-
+for n in range(max_iterations): 
     gradient = jax.grad(cost_fn)(theta)
     updates, opt_state = opt.update(gradient, opt_state)
     theta = optax.apply_updates(theta, updates)
