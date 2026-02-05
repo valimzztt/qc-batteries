@@ -12,7 +12,6 @@ geometry = jnp.array([[0.0, 0.0, 0.0],
                       [0.0, 0.0, 3.0]])
 
 # Charge=0, Multiplicity=1 (Singlet) are defaults
-mol = qchem.Molecule(symbols, geometry)
 molecule = qml.qchem.Molecule(symbols, geometry) # creates 12 spin-orbitals
 # molecule = qml.qchem.Molecule(symbols, geometry, basis_name="6-31G") creates 22 spin-orbitals
 print(molecule.mult)

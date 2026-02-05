@@ -105,11 +105,12 @@ def embed_into_qubits(H_small, Nph):
     return (P_full @ H_pad @ P_full).tocsr()
 
 # We implement the VQE in Pennylane 
-t = 0.03   # eV (Fe-Fe coupling scale)
+t = 1.0 # this is the hopping integral
+omega = 0.5 # phonon frequency 
+g_true = 0.5 # electron-phonon coupling strength 
+g = g_true  * np.sqrt(2)
 Delta= 0.00   # eV
-omega= 0.05   # eV (effective phonon quantum)
-g  = 0.10   # eV (coupling strength)
-Nph = 16   # phonon truncation (try 6-12)
+Nph = 16   # phonon truncation (always power of 2!)
 
 # Build Hamiltonian
 H_small = holstein_dimer_matrix(t, Delta, omega, g, Nph)
@@ -155,9 +156,9 @@ n_params = 2 + 2*n_ph_qubits
 params = np.random.normal(scale=0.1, size=(n_params,), requires_grad=True)
 
 opt = qml.AdamOptimizer(stepsize=0.05)
-for it in range(1000):
+for it in range(300):
     params = opt.step(energy, params)
- 
+    
 E0 = energy(params)
 print(f"VQE ground energy (Nph={Nph}): {E0:.6f} eV")
 

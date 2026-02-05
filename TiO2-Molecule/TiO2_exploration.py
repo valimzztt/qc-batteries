@@ -32,11 +32,10 @@ active_orbitals = 6
 core_indices, active_indices= qchem.active_space(electrons, orbitals=orbitals, active_electrons=active_electrons, active_orbitals=active_orbitals)
 print("Core indices", core_indices)
 print("Active indices", active_indices)
-
+active_orbitals = orbitals
 h_pauli, qubits = qchem.molecular_hamiltonian(
-    symbols, geometry, mult=1, basis="sto-3g",
-    mapping = "jordan_wigner",
-    method = "pyscf", active_orbitals=active_orbitals, load_data=True
+    symbols, geometry,
+    method = "pyscf", load_data=True
 )
 
 
